@@ -112,3 +112,26 @@ class WebhookEvent(Base):
     processed = Column(Boolean, default=False)
     error = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class Deal(Base):
+    __tablename__ = "deals"
+
+    id = Column(String, primary_key=True, default=lambda: f"deal_{uuid.uuid4().hex[:10]}")
+    tenant_id = Column(String, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String, nullable=False)
+    company = Column(String, nullable=False)
+    contact_person = Column(String, nullable=False)
+    contact_email = Column(String, nullable=True)
+    contact_phone = Column(String, nullable=True)
+    value = Column(Integer, default=0)
+    currency = Column(String, default="INR")
+    stage = Column(String, default="New", index=True)
+    score = Column(Integer, default=50)
+    source = Column(String, default="Website")
+    priority = Column(String, default="Medium")
+    assigned_to = Column(String, default="Ananya Sharma")
+    expected_close_date = Column(String, nullable=True)
+    service_category = Column(String, default="Cloud Architecture & DevOps")
+    notes = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
