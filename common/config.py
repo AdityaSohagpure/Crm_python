@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
-        "postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/cmr_multitenant_crm"
+        "postgresql+asyncpg://neondb_owner:npg_FY9xI3DbNnOy@ep-mute-mud-b5m0wtm5-pooler.c-7.us-east-2.aws.neon.tech/neondb?ssl=require"
     )
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
     JWT_SECRET: str = os.getenv("JWT_SECRET", "cmr-secret-jwt-key-python-microservices")
