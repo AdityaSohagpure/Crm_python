@@ -7,8 +7,10 @@ if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
 from a2wsgi import ASGIMiddleware
-from main import app
+from main import app as asgi_app
 
-# WSGI callable application for default Gunicorn invocation on Render
-application = ASGIMiddleware(app)
-app_wsgi = application
+# Native ASGI export for UvicornWorker
+app = asgi_app
+
+# WSGI wrapped export for synchronous Gunicorn workers
+application = ASGIMiddleware(asgi_app)
