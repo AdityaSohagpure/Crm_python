@@ -9,8 +9,20 @@ if str(root_dir) not in sys.path:
 from a2wsgi import ASGIMiddleware
 from main import app as asgi_app
 
-# Native ASGI export for UvicornWorker
-app = asgi_app
 
-# WSGI wrapped export for synchronous Gunicorn workers
-application = ASGIMiddleware(asgi_app)
+class HybridApp:
+    """Universal ASGI/WSGI callable adapter for Gunicorn and Uvicorn."""
+    def __init__(self, app):
+        self._asgi = app
+        self._wsgi = ASGIMiddleware(app)
+
+    def __call__(self, *args, **kwargs):
+        # ASGI calling convention: (scope, receive, send)
+        if len(args) == 3 and isinstance(args[0], dict) and "type" in args[0]:
+            return self._asgi(*args, **kwargs)
+        # WSGI calling convention: (environ, start_response)
+        return self._wsgi(*args, **kwargs)
+
+
+app = asgi_app
+application = HybridApp(asgi_app)
