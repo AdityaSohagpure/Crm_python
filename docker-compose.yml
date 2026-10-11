@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    image: postgres:16-alpine
+    container_name: crm_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cmr_multitenant_crm
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis_cache:
+    image: redis:7-alpine
+    container_name: crm_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  gateway_auth_service:
+    build:
+      context: ..
+      dockerfile: backend_python/services/gateway_auth/Dockerfile
+    container_name: crm_gateway_auth
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres_db:5432/cmr_multitenant_crm
+      - REDIS_URL=redis://redis_cache:6379/0
+    depends_on:
+      - postgres_db
+      - redis_cache
+
+  channel_messaging_service:
+    build:
+      context: ..
+      dockerfile: backend_python/services/channel_messaging/Dockerfile
+    container_name: crm_channel_messaging
+    restart: always
+    ports:
+      - "4001:4001"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres_db:5432/cmr_multitenant_crm
+      - REDIS_URL=redis://redis_cache:6379/0
+    depends_on:
+      - postgres_db
+      - redis_cache
+
+  contact_identity_service:
+    build:
+      context: ..
+      dockerfile: backend_python/services/contact_identity/Dockerfile
+    container_name: crm_contact_identity
+    restart: always
+    ports:
+      - "4002:4002"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres_db:5432/cmr_multitenant_crm
+    depends_on:
+      - postgres_db
+
+  webhook_receiver_service:
+    build:
+      context: ..
+      dockerfile: backend_python/services/webhook_receiver/Dockerfile
+    container_name: crm_webhook_receiver
+    restart: always
+    ports:
+      - "4003:4003"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres_db:5432/cmr_multitenant_crm
+    depends_on:
+      - postgres_db
+
+volumes:
+  postgres_data:
